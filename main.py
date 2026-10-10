@@ -30,7 +30,7 @@ def get_tasks(done: bool | None = None, limit: int = 10):
     return result[:limit]
 
 
-@app.get("/tasks/{task_id}", response_model=list[Task])
+@app.get("/tasks/{task_id}", response_model=Task)
 def get_task(task_id: int):
     for task in TASKS:
         if task["id"] == task_id:
@@ -38,7 +38,7 @@ def get_task(task_id: int):
     raise HTTPException(status_code=404, detail="Task not found")
 
 
-@app.post("/tasks", status_code=201, response_model=list[Task])
+@app.post("/tasks", status_code=201, response_model=Task)
 def create_task(payload: TaskCreate):
     new_id = max((task["id"] for task in TASKS), default=0) + 1
     new_task = {"id": new_id, "title": payload.title, "done": payload.done}
