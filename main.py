@@ -4,10 +4,26 @@ from fastapi import FastAPI
 app = FastAPI()
 
 
+TASKS = [
+    {"id": 1, "title": "Купить хлеб", "done": False},
+    {"id": 2, "title": "Позвонить врачу", "done": False},
+    {"id": 3, "title": "Закончить курс", "done": False},
+]
+
+
 @app.get("/tasks")
-def get_task():
-    return [
-        {"id": 1, "title": "Купить хлеб", "done": False},
-        {"id": 2, "title": "Позвонить врачу", "done": False},
-        {"id": 3, "title": "Закончить курс", "done": False},
-    ]
+def get_tasks(done: bool | None = None, limit: int = 10):
+    if done is None:
+        result = TASKS
+    else:
+        result = [task for task in TASKS if task["done"] == done]
+    return result[:limit]
+
+
+@app.get("/tasks/{task_id}")
+def get_task(task_id: int):
+    for task in TASKS:
+        if task["id"] == task_id:
+            return task
+
+
