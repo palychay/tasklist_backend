@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 
@@ -17,7 +17,11 @@ class TaskCreate(BaseModel):
     done: bool = False
 
 
-@app.get("/tasks")
+class Task(TaskCreate):
+    id: int
+
+
+@app.get("/tasks", response_model=list[Task])
 def get_tasks(done: bool | None = None, limit: int = 10):
     if done is None:
         result = TASKS
@@ -26,14 +30,15 @@ def get_tasks(done: bool | None = None, limit: int = 10):
     return result[:limit]
 
 
-@app.get("/tasks/{task_id}")
+@app.get("/tasks/{task_id}", response_model=list[Task])
 def get_task(task_id: int):
     for task in TASKS:
         if task["id"] == task_id:
             return task
+    raise HTTPException(status_code=404, detail="Task not found")
 
 
-@app.post("/tasks")
+@app.post("/tasks", status_code=201, response_model=list[Task])
 def create_task(payload: TaskCreate):
     new_id = max((task["id"] for task in TASKS), default=0) + 1
     new_task = {"id": new_id, "title": payload.title, "done": payload.done}
