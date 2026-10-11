@@ -2,7 +2,7 @@ from fastapi import HTTPException
 
 from repositories.users import UserRepository
 from schemas import UserCreate
-from security import hash_password, verify_password
+from security import hash_password, verify_password, create_access_token
 
 
 class AuthService:
@@ -18,7 +18,11 @@ class AuthService:
       )
 
   def authenticate(self, email: str, password: str):
-      user = self.repo.get_by_email(email)
-      if user is None or not verify_password(password, user.password_hash):
-          raise HTTPException(status_code=401, detail="Invalid credentials")
-      return user
+    user = self.repo.get_by_email(email)
+    if user is None or not verify_password(password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    return {
+        "access_token": create_access_token(user.id),
+        "token_type": "bearer",
+    }
+
